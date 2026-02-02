@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Wendizx Elite Store - V6 Final</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+:root {
+	--p: #00f2fe; --s: #4facfe; --a: #00ff88; --d: #ff4b2b; --bg: #030005;
+	--g: rgba(255,255,255,0.03); --glass-v2: rgba(10,10,10,0.8);
+}
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+body { height: 100vh; overflow: hidden; background: var(--bg); color: #fff; display: flex; justify-content: center; align-items: center; }
+
+#p, .scanline { 
+	position: fixed; 
+	top: 0; left: 0; width: 100%; height: 100%; 
+	z-index: 50;
+	pointer-events: none !important; 
+}
+#p { opacity: 0.3; }
+
+.app { 
+	position: absolute; 
+	z-index: 100;
+	width: 95%; max-width: 420px; height: 94vh; 
+	background: var(--glass-v2); backdrop-filter: blur(50px); border-radius: 50px; 
+	border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; 
+	overflow: hidden; box-shadow: 0 0 80px rgba(0,242,254,0.1);
+}
+
+.logo-container { width: 85px; height: 85px; margin: 0 auto 10px; border-radius: 50%; border: 2px solid var(--p); overflow: hidden; background: #000; box-shadow: 0 0 25px rgba(0,242,254,0.3); }
+.logo-container img { width: 100%; height: 100%; object-fit: cover; }
+.header { padding: 25px 25px 10px; text-align: center; }
+.logo { font-family: 'Syncopate'; font-size: 18px; letter-spacing: 5px; cursor: pointer; text-transform: uppercase; }
+.logo span { color: var(--p); }
+.balance-card { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 35px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; }
+.balance-card::after { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent); transform: rotate(45deg); animation: shine 5s infinite; }
+@keyframes shine { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
+.tabs { display: flex; background: rgba(0,0,0,0.6); padding: 8px; margin: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); }
+.tab { flex: 1; text-align: center; padding: 12px; font-size: 10px; font-weight: 900; color: #444; cursor: pointer; border-radius: 22px; transition: 0.3s; text-transform: uppercase; }
+.tab.active { color: #fff; background: rgba(255,255,255,0.05); }
+.view { display: none; flex-direction: column; padding: 10px 25px 5px; overflow-y: auto; flex: 1; scrollbar-width: none; }
+.view.active { display: flex; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.card { background: var(--g); border: 1px solid rgba(255,255,255,0.05); padding: 22px; border-radius: 30px; margin-bottom: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+.card:active { transform: scale(0.97); }
+.btn { width: 100%; padding: 22px; border-radius: 25px; border: none; font-weight: 900; text-transform: uppercase; cursor: pointer; background: linear-gradient(45deg, var(--p), var(--s)); color: #000; transition: 0.3s; }
+.btn:active { transform: scale(0.95); }
+.btn.loading { opacity: 0.7; pointer-events: none; position: relative; }
+.btn.loading::after { content: ''; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.2); border-top-color: rgba(0,0,0,0.6); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+.btn-sec { background: none; border: 1px solid rgba(255,255,255,0.1); color: #777; margin-top: 10px; }
+input, select { width: 100%; padding: 20px; margin: 10px 0; border-radius: 25px; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.5); color: #fff; text-align: center; font-weight: 700; }
+input:focus { border-color: var(--p); outline: none; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(25px); }
+.modal-content { width: 90%; max-width: 380px; background: #050505; border: 1px solid var(--p); padding: 40px; border-radius: 50px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,1); }
+.status-bar { position: absolute; top: 15px; width: 100%; padding: 0 35px; display: flex; justify-content: space-between; font-size: 10px; color: #444; font-weight: 800; letter-spacing: 1px; }
+.hidden { display: none; }
+
+.promo-timer { background: rgba(255,75,43,0.1); border: 1px solid var(--d); padding: 10px; border-radius: 15px; margin-bottom: 15px; font-size: 10px; text-align: center; }
+.live-count { color: var(--a); font-size: 10px; text-align: center; margin-bottom: 10px; font-weight: 800; }
+.ranking-container { background: rgba(255,255,255,0.02); border-radius: 20px; padding: 15px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05); }
+.rank-item { display: flex; justify-content: space-between; font-size: 11px; padding: 5px 0; opacity: 0.8; }
+#chartCanvas { width: 100%; height: 40px; margin-top: 10px; border-bottom: 1px solid var(--p); }
+
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--p); color: #000; padding: 12px 25px; border-radius: 20px; font-weight: 800; font-size: 12px; z-index: 10000; transition: 0.3s; }
+
+/* Activity feed + UI extras */
+.activity-feed { margin-top:15px; max-height:220px; overflow:auto; border-radius:15px; border:1px solid rgba(255,255,255,0.03); padding:8px; background: rgba(255,255,255,0.01); }
+.act-item { display:flex; justify-content:space-between; gap:12px; padding:8px; border-bottom:1px solid rgba(255,255,255,0.02); font-size:12px; align-items:center; transition: 0.18s; }
+.act-item:hover { background: rgba(255,255,255,0.01); transform: translateY(-3px); }
+.act-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--p),var(--s)); display:inline-block; margin-right:10px; flex:0 0 36px; align-self:flex-start; text-align:center; line-height:36px; font-weight:900; }
+.act-meta { color:#777; font-size:10px; margin-top:6px; }
+.act-type { font-weight:900; font-size:11px; color:var(--p); display:block; }
+.badge { padding:4px 8px; border-radius:12px; font-size:11px; font-weight:800; }
+.badge.deposit { background: rgba(0,255,136,0.08); color:var(--a); border:1px solid rgba(0,255,136,0.06); }
+.badge.purchase { background: rgba(0,242,254,0.06); color:var(--p); border:1px solid rgba(0,242,254,0.06); }
+.badge.pending { background: rgba(255,165,0,0.06); color:#ffae00; border:1px solid rgba(255,165,0,0.06); }
+.timeline { border-left:2px dashed rgba(255,255,255,0.03); padding-left:12px; }
+.timeline .act-item { border-bottom:none; padding:14px 6px; }
+.tooltip { position:relative; cursor:help; }
+.tooltip:hover::after { content:attr(data-tip); position:absolute; left:50%; transform:translateX(-50%); bottom:120%; background:#111; padding:8px 10px; border-radius:8px; font-size:11px; color:#fff; white-space:nowrap; box-shadow:0 6px 20px rgba(0,0,0,0.6); }
+.skeleton { background: linear-gradient(90deg,#111 25%, #0b0b0b 37%, #111 63%); background-size:400% 100%; animation: shimmer 1.2s linear infinite; height:56px; border-radius:10px; margin-bottom:8px; }
+@keyframes shimmer { 0%{ background-position:200% 0 } 100%{ background-position:-200% 0 } }
+.btn.small { padding:8px 12px; font-size:12px; border-radius:12px; width:auto; }
+.confetti { position:fixed; pointer-events:none; left:0; top:0; width:100%; height:100%; z-index:99999; overflow:hidden; display:none; }
+.notif-bell { position:relative; cursor:pointer; }
+.notif-count { position:absolute; top:-6px; right:-8px; background:var(--d); color:#fff; font-size:10px; padding:3px 6px; border-radius:999px; font-weight:900; }
+.theme-toggle { display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+.export-btn { display:inline-block; margin-left:8px; }
+
+/* WhatsApp floating support button */
+.whatsapp-fab { position:fixed; right:18px; bottom:18px; width:64px; height:64px; border-radius:999px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index:20000; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform 200ms ease; }
+.whatsapp-fab:hover { transform: translateY(-6px); }
+.whatsapp-fab img { width:100%; height:100%; object-fit:cover; border-radius:999px; display:block; }
+.whatsapp-fab .badge { position:absolute; right:-6px; top:-6px; background:#25D366; color:#fff; padding:4px 6px; border-radius:12px; font-size:11px; font-weight:900; box-shadow:0 6px 18px rgba(0,0,0,0.25); }
+
+/* Instagram floating support button (placed to the left of WhatsApp) */
+.instagram-fab { position:fixed; right:92px; bottom:18px; width:54px; height:54px; border-radius:999px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); z-index:20000; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform 200ms ease; }
+.instagram-fab:hover { transform: translateY(-6px); }
+.instagram-fab img { width:100%; height:100%; object-fit:cover; border-radius:999px; display:block; }
+
+/* Pix modal warning and deposit banner */
+.pix-warning { margin-top:10px; background: rgba(255,75,43,0.08); border:1px solid var(--d); color:var(--d); padding:8px 12px; border-radius:10px; font-size:12px; }
+.deposit-banner { position:fixed; top:80px; right:-400px; width:360px; background: linear-gradient(90deg,#00ff88,#00f2fe); color:#001; padding:14px 18px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.4); font-weight:900; z-index:20000; transition: right 420ms cubic-bezier(.2,.9,.2,1); display:flex; gap:10px; align-items:center; }
+.deposit-banner.show { right:18px; }
+.deposit-banner.hide { right:-420px; }
+.deposit-banner .close-btn { background: rgba(0,0,0,0.06); border: none; padding:6px 8px; border-radius:8px; cursor:pointer; margin-left:8px; font-weight:800; }
+
+/* Purchase processing + success */
+.processing-wrap { display:flex; flex-direction:column; gap:12px; align-items:center; }
+.progress-bar { width:80%; height:10px; background:rgba(255,255,255,0.06); border-radius:999px; overflow:hidden; }
+.progress-bar .fill { height:100%; width:0%; background:linear-gradient(90deg,var(--a),var(--p)); transition: width 1.2s ease; }
+.success-card { display:flex; gap:12px; align-items:center; justify-content:space-between; background:linear-gradient(90deg,#00ff88,#00f2fe); color:#022; padding:16px; border-radius:14px; font-weight:900; }
+.order-id { font-family: 'Syncopate'; font-size:16px; color:#002; }
+.saldo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.saldo-text {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--a);
+  font-family: 'Syncopate';
+}
+
+</style>
+</head>
+<body>
+
+<div class="scanline"></div>
+<canvas id="p"></canvas>
+
+<div class="app">
+	<div class="status-bar" style="justify-content: flex-start; gap:8px;">
+		<span style="opacity:.9">WENDIZX NETWORK</span>
+            <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+            	<div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar tema">🌗</div>
+            	<div id="notifBell" class="notif-bell" title="Notificações">🔔<span id="notifCount" class="notif-count hidden">0</span></div>
+            </div>
+		<span id="clock">12:00</span>
+	</div>
+
+	<div class="header">
+		<div class="logo-container">
+			<img src="https://i.postimg.cc/BbffRLkM/IMG-20251212-052129-915.webp" alt="Logo">
+		</div>
+		<div class="logo" onclick="secret()">WENDIZX <span>STORE</span></div>
+		<div class="promo-timer">OFERTA TERMINA EM: <b id="cd" style="color:var(--d)">02:00:00</b></div>
+		<div class="balance-card">
+  <p style="font-size:9px; color:#555; letter-spacing: 3px;">CARTEIRA DIGITAL</p>
+
+  <div class="saldo-row">
+    <p class="saldo-text">
+      R$ <span id="meuSaldo">0,00</span>
+    </p>
+
+    <button class="btn small" onclick="goTo('view-deposito')">
+      ADICIONAR SALDO
+    </button>
+  </div>
+</div>
+
+	<div class="tabs">
+		<div class="tab active" id="tab-serv" onclick="goTo('view-menu')">LOJA</div>
+		<div class="tab" id="tab-comb" onclick="goTo('view-combos')">PACKS</div>
+		<div class="tab" id="tab-hist" onclick="goTo('view-hist')">HISTORICO</div>
+	</div>
+
+	<div class="view active" id="view-menu">
+		<div class="live-count">🔥 <span id="user-now">12</span> PESSOAS COMPRANDO AGORA</div>
+		<div class="card" onclick="startBuy('Seguidores')">
+			<div><b>SEGUIDORES INSTAGRAM</b><br><small style="color:#555">R$ 0,011 p/ unidade</small></div>
+			<span>➔</span>
+		</div>
+		<div class="card" onclick="startBuy('Curtidas')">
+			<div><b>CURTIDAS REAIS</b><br><small style="color:#555">R$ 0,00299 p/ unidade</small></div>
+			<span>➔</span>
+		</div>
+		<div class="card" onclick="startBuy('Visualizações')">
+			<div><b>VIEWS STORYS/REELS</b><br><small style="color:#555">R$ 0,005 p/ unidade</small></div>
+			<span>➔</span>
+		</div>
+		<canvas id="chartCanvas"></canvas>
+	</div>
+
+	<div class="view" id="view-comprar">
+		<h2 id="buyTitle" style="color:var(--p); font-family:'Syncopate'; font-size:13px; margin-bottom:20px;"></h2>
+		<input type="number" id="qtd" placeholder="QUANTIDADE">
+		<select id="regiao" onchange="calc()">
+			<option value="global">PERFIS MUNDIAIS</option>
+			<option value="br">PERFIS BRASILEIROS</option>
+		</select>
+		<input id="link" placeholder="LINK OU @USUARIO">
+		<div style="margin:20px 0; padding:25px; background:rgba(0,0,0,0.4); border-radius:35px; border: 1px solid rgba(255,255,255,0.05); text-align:center;">
+			<p style="font-size:10px; color:#444;">INVESTIMENTO</p>
+			<h2 id="total" style="color:var(--a); font-size:38px; font-weight:900;">R$ 0,00</h2>
+		</div>
+		<button id="btnOrderNow" class="btn" onclick="orderNow()">CONFIRMAR PEDIDO</button>
+		<button class="btn btn-sec" onclick="goTo('view-menu')">VOLTAR</button>
+	</div>
+
+	<div class="view" id="view-combos">
+		<h2 style="font-family:'Syncopate'; font-size:13px; margin-bottom:25px; color:var(--p);">COMBOS EXCLUSIVOS</h2>
+		<div class="card" onclick="openCombo('Pack Start', 9.90)">
+			<div><b>PACK START 🚀</b><br><small style="color:#555">500 Seg + 150 Curtidas + 1k Views</small></div>
+			<b style="color:var(--a)">R$ 9,90</b>
+		</div>
+		<div class="card" onclick="openCombo('Influencer Pro 👑', 19.90)">
+			<div><b>INFLUENCER PRO</b><br><small style="color:#555">2k Seg + 500 Curtidas + 5k Views</small></div>
+			<b style="color:var(--a)">R$ 19,90</b>
+		</div>
+		<div class="ranking-container">
+			<p style="font-size:9px; color:var(--p); margin-bottom:10px; font-weight: 800;">TOP COMPRADORES (DIA)</p>
+			<div class="rank-item"><span>1. @gabriel***</span> <b>R$ 442,00</b></div>
+			<div class="rank-item"><span>2. @isabella***</span> <b>R$ 310,50</b></div>
+			<div class="rank-item"><span>3. @felipe***</span> <b>R$ 128,00</b></div>
+		</div>
+		<div id="comboAction" class="hidden" style="margin-top:10px; background:rgba(0,0,0,0.5); padding:20px; border-radius:30px; border:1px solid var(--p);">
+			<p id="comboSelected" style="font-size:11px; margin-bottom:15px; font-weight:800;"></p>
+			<input id="linkCombo" placeholder="LINK DO PERFIL">
+			<button id="btnFinalizeCombo" class="btn" onclick="finalizarCombo()">ATIVAR AGORA</button>
+		</div>
+		<button class="btn btn-sec" style="margin-top:10px;" onclick="goTo('view-menu')">VOLTAR</button>
+	</div>
+
+	<div class="view" id="view-hist">
+		<h2 style="font-family:'Syncopate'; font-size:13px; margin-bottom:20px;">HISTÓRICO DE COMPRAS</h2>
+		<div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+			<input id="feedSearch" placeholder="🔍 Buscar no feed" style="flex:1; padding:10px 12px; border-radius:12px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.04); color:#fff;" oninput="filterFeed()">
+			<select id="feedFilter" onchange="filterFeed()" style="padding:10px 12px; border-radius:12px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.04); color:#fff;">
+				<option value="all">Todos</option>
+				<option value="deposit">Depósitos</option>
+				<option value="purchase">Compras</option>
+				<option value="pix_created">PIX</option>
+			</select>
+			<button class="btn small export-btn" onclick="exportFeedCSV()" title="Exportar CSV">⬇️ CSV</button>
+			<button class="btn small" onclick="toggleTimeline()" id="timelineBtn" title="Alternar timeline">🕓</button>
+		</div>
+		<div id="hist-list"></div>
+		<div style="margin-top:12px;">
+			<p style="font-size:9px; color:var(--p); margin-bottom:8px; font-weight:800;">FEED DE ATIVIDADES</p>
+			<div id="activity-feed" class="activity-feed"></div>
+		</div>
+		<div id="notifPanel" class="activity-feed hidden" style="position:absolute; right:20px; top:70px; width:320px; max-height:60vh;"></div>
+		<button class="btn btn-sec" onclick="goTo('view-menu')">VOLTAR</button>
+	</div>
+
+	<div class="view" id="view-deposito">
+    <h2 style="font-family:'Syncopate'; font-size:13px; margin-bottom:20px;">RECARREGAR</h2>
+    
+    <div id="metodo-selecao">
+        <p style="font-size:11px; color:#777; margin-bottom:15px; text-align:center;">ESCOLHA O MÉTODO DE PAGAMENTO</p>
+        <div class="card" onclick="setMetodo('pix')" style="margin-bottom:10px;">
+            <div><b>PIX INSTANTÂNEO</b><br><small style="color:var(--a)">Aprovação imediata</small></div>
+            <span>⚡</span>
+        </div>
+        <div class="card" onclick="setMetodo('cartao')">
+            <div><b>CARTÃO DE CRÉDITO</b><br><small style="color:#90EE90">Aprovação imediata</small></div>
+            <span>💳</span>
+        </div>
+    </div>
+
+    <div id="fluxo-pix" class="hidden">
+        <input type="number" id="vDep" placeholder="VALOR R$">
+        <button id="btnPayPix" class="btn" onclick="payPix()">GERAR QR CODE</button>
+        <button class="btn btn-sec" onclick="setMetodo('reset')">VOLTAR</button>
+    </div>
+
+    <div id="fluxo-cartao" class="hidden">
+        <input type="number" id="vDepCartao" placeholder="VALOR DA RECARGA">
+        <input type="text" id="cc_nome" placeholder="NOME IMPRESSO NO CARTÃO">
+        <input type="text" id="cc_num" placeholder="0000 0000 0000 0000" maxlength="19">
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="cc_val" placeholder="MM/AA" maxlength="5">
+            <input type="text" id="cc_cvv" placeholder="CVV" maxlength="4">
+        </div>
+        <button id="btnPayCartao" class="btn" onclick="processarCartao()" style="margin-top:10px;">FINALIZAR PAGAMENTO</button>
+        <button class="btn btn-sec" onclick="setMetodo('reset')">VOLTAR</button>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+<div class="modal" id="pixModal"><div class="modal-content" id="modalInt"></div></div>
+<div class="modal" id="confirmModal"><div class="modal-content" id="confirmInt"></div></div>
+<div id="confetti" class="confetti"></div>
+<div id="toast-notifications" style="position:fixed; right:18px; top:80px; z-index:15000;"></div>
+
+<!-- WhatsApp support floating button -->
+<a id="whatsappFab" class="whatsapp-fab" href="https://wa.me/5565993492211?text=Ol%C3%A1%2C%20preciso%20de%20suporte" target="_blank" rel="noopener">
+	<img src="https://imgs.search.brave.com/Tjj0mhbnOY70Q9FI5msXYvv2DTeOxMSRwSyXXzxuoP4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/ZnJlZXBuZ2xvZ29z/LmNvbS91cGxvYWRz/L3doYXRzYXBwLXBu/Zy1pbWFnZS05LnBu/Zw" alt="WhatsApp Support">
+</a>
+
+<!-- Instagram support floating button -->
+<a id="instagramFab" class="instagram-fab" href="https://www.instagram.com/wendizx_/" target="_blank" rel="noopener">
+    <img src="https://imgs.search.brave.com/4SpY97NAvaHU9wdz2vtmoXULxfDqDjQ6SOtwPQMkYw4/rs:fit:860:0:0:0/g:ce/aHR0cDovL3Bsb25l/Ln
